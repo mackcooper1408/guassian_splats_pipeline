@@ -5,10 +5,17 @@ FROM ubuntu:22.04
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install the version of cmake required by colmap
+RUN apt-get update && apt-get install -y \
+    gpg wget software-properties-common \
+    && wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg \
+    && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null \
+    && apt-get update && apt-get install -y \
+    cmake
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
-    cmake \
     build-essential \
     libboost-program-options-dev \
     libboost-filesystem-dev \
@@ -32,7 +39,10 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     wget \
     libopenimageio-dev \
+    openimageio-tools \
     libopenexr-dev \
+    libopencv-dev \
+    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 # Install COLMAP (CPU-only build)
@@ -66,7 +76,8 @@ RUN git clone https://github.com/graphdeco-inria/gaussian-splatting /workspace/g
 
 # Install Gaussian Splatting dependencies
 WORKDIR /workspace/gaussian-splatting
-RUN pip3 install -r requirements.txt
+COPY requirements-cpu.txt .
+RUN pip3 install -r requirements-cpu.txt
 
 # Set working directory back to main workspace
 WORKDIR /workspace/project

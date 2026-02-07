@@ -12,6 +12,16 @@ import shutil
 from pathlib import Path
 
 
+def _run_with_display(cmd):
+    """
+    Run command with xvfb for headless operation.
+    COLMAP requires display even in CPU mode due to Qt/OpenGL initialization.
+    """
+    if shutil.which("xvfb-run"):
+        return ["xvfb-run", "-a", "--server-args=-screen 0 1024x768x24"] + cmd
+    return cmd
+
+
 def run_colmap(
     images_dir,
     output_dir,
@@ -52,6 +62,7 @@ def run_colmap(
         "--ImageReader.single_camera", "1",
     ]
     
+    # GPU mode (only add if GPU is enabled and available)
     if gpu:
         feature_cmd.extend(["--SiftExtraction.use_gpu", "1"])
     
@@ -72,7 +83,7 @@ def run_colmap(
             "--SiftExtraction.max_num_features", "2048"
         ])
     
-    subprocess.run(feature_cmd, check=True)
+    subprocess.run(_run_with_display(feature_cmd), check=True)
     
     print("\n" + "=" * 60)
     print("COLMAP Feature Matching")
@@ -84,10 +95,11 @@ def run_colmap(
         "--database_path", str(database_path),
     ]
     
+    # GPU mode (only add if GPU is enabled and available)
     if gpu:
         matching_cmd.extend(["--SiftMatching.use_gpu", "1"])
     
-    subprocess.run(matching_cmd, check=True)
+    subprocess.run(_run_with_display(matching_cmd), check=True)
     
     # Sparse reconstruction - use GLOMAP or COLMAP mapper
     if use_glomap and shutil.which("glomap"):
@@ -103,7 +115,7 @@ def run_colmap(
             "--output_path", str(sparse_dir),
         ]
         
-        subprocess.run(mapper_cmd, check=True)
+        subprocess.run(_run_with_display(mapper_cmd), check=True)
     else:
         if use_glomap:
             print("\nWarning: GLOMAP not found, falling back to COLMAP mapper")
@@ -120,7 +132,7 @@ def run_colmap(
             "--output_path", str(sparse_dir),
         ]
         
-        subprocess.run(mapper_cmd, check=True)
+        subprocess.run(_run_with_display(mapper_cmd), check=True)
     
     # Find the reconstruction folder (usually '0')
     reconstruction_dirs = sorted([d for d in sparse_dir.iterdir() if d.is_dir()])
@@ -159,6 +171,24 @@ def main():
         action="store_true",
         help="Use COLMAP mapper instead of GLOMAP (slower but more compatible)"
     )
+    parser.add_argument(
+        "--camera_model",
+        type=str,
+        default="OPENCV",
+        help="Camera model (OPENCV, PINHOLE, RADIAL, etc.)"
+    )
+    parser.add_argument(
+        "--quality",
+        type=str,
+        default="high",
+        choices=["high", "medium", "low"],
+        help="Processing quality (high, medium, low)"
+    )
+    parser.add_argument(
+        "--no_gpu",
+        action="store_true",
+        help="Disable GPU acceleration"
+    )
     
     args = parser.parse_args()
     
@@ -174,25 +204,6 @@ def main():
         quality=args.quality,
         gpu=not args.no_gpu,
         use_glomap=not args.no_glomap
-    parser.add_argument(
-        "--no_gpu",
-        action="store_true",
-        help="Disable GPU acceleration"
-    )
-    
-    args = parser.parse_args()
-    
-    # Validate input
-    if not Path(args.images_dir).exists():
-        raise FileNotFoundError(f"Images directory not found: {args.images_dir}")
-    
-    # Run COLMAP
-    run_colmap(
-        args.images_dir,
-        args.output_dir,
-        camera_model=args.camera_model,
-        quality=args.quality,
-        gpu=not args.no_gpu
     )
 
 

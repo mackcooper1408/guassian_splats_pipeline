@@ -13,6 +13,8 @@ services:
       - ./example:/workspace/project/example
       - ./data/output:/workspace/project/output
     working_dir: /workspace/project
+    environment:
+      - QT_QPA_PLATFORM=offscreen
     stdin_open: true
     tty: true
     command: /bin/bash

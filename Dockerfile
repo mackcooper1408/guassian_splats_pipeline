@@ -7,10 +7,17 @@ ENV CUDA_HOME=/usr/local/cuda
 ENV PATH=${CUDA_HOME}/bin:${PATH}
 ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
 
+# Install the version of cmake required by colmap
+RUN apt-get update && apt-get install -y \
+    gpg wget software-properties-common \
+    && wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg \
+    && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null \
+    && apt-get update && apt-get install -y \
+    cmake
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
-    cmake \
     build-essential \
     libboost-program-options-dev \
     libboost-filesystem-dev \
@@ -34,14 +41,16 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     wget \
     libopenimageio-dev \
+    openimageio-tools \
     libopenexr-dev \
+    libopencv-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install COLMAP
 RUN git clone https://github.com/colmap/colmap.git /tmp/colmap && \
     cd /tmp/colmap && \
     mkdir build && cd build && \
-    cmake .. -DCMAKE_CUDA_ARCHITECTURES=native && \
+    cmake .. -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89" && \
     make -j$(nproc) && \
     make install && \
     rm -rf /tmp/colmap
@@ -50,7 +59,7 @@ RUN git clone https://github.com/colmap/colmap.git /tmp/colmap && \
 RUN git clone https://github.com/colmap/glomap.git /tmp/glomap && \
     cd /tmp/glomap && \
     mkdir build && cd build && \
-    cmake .. -DCMAKE_CUDA_ARCHITECTURES=native && \
+    cmake .. -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89" && \
     make -j$(nproc) && \
     make install && \
     rm -rf /tmp/glomap
@@ -68,6 +77,7 @@ RUN git clone https://github.com/graphdeco-inria/gaussian-splatting /workspace/g
 
 # Install Gaussian Splatting dependencies
 WORKDIR /workspace/gaussian-splatting
+COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
 # Set working directory back to main workspace
