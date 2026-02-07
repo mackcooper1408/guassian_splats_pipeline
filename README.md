@@ -7,7 +7,7 @@ A complete end-to-end pipeline for creating Gaussian Splats from video footage a
 ![Pipeline Overview](docs/images/pipeline_overview.png)
 <!-- TODO: Add pipeline overview diagram -->
 
-## 🎯 Overview
+## Overview
 
 This repository provides a streamlined workflow for:
 1. **Video Processing**: Extract frames from video footage
@@ -23,7 +23,7 @@ Gaussian Splatting is a novel 3D representation technique that uses 3D Gaussians
 - **Efficient training** compared to Neural Radiance Fields
 - **Direct 3D editing** capabilities
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Features](#features)
 - [Requirements](#requirements)
@@ -44,7 +44,7 @@ Gaussian Splatting is a novel 3D representation technique that uses 3D Gaussians
 - [Credits](#credits)
 - [License](#license)
 
-## ✨ Features
+## Features
 
 - **Automated Pipeline**: Complete scripts for end-to-end processing
 - **GLOMAP Integration**: Faster reconstruction than traditional COLMAP (10-50x speedup)
@@ -56,7 +56,7 @@ Gaussian Splatting is a novel 3D representation technique that uses 3D Gaussians
 - **Blender Integration**: Ready-to-import PLY files for 3D visualization with Kiri 3DGS addon
 - **Well Documented**: Comprehensive guides with images and examples
 
-## 📦 Requirements
+## Requirements
 
 ### Hardware Requirements
 - **GPU**: NVIDIA GPU with CUDA support (8GB+ VRAM recommended)
@@ -71,7 +71,7 @@ Gaussian Splatting is a novel 3D representation technique that uses 3D Gaussians
 - **COLMAP 3.8+** and **GLOMAP** (latest)
 - **Blender 4.5+** (for visualization, 4.2+ compatible)
 
-## 🚀 Installation
+## Installation
 
 ### Option 1: Docker (Recommended)
 
@@ -190,7 +190,7 @@ pip install -r requirements.txt
 
 </details>
 
-## 🎬 Quick Start
+## Quick Start
 
 ### Using the Automated Pipeline
 
@@ -233,7 +233,7 @@ python scripts/train_gaussian_splat.py \
     --export_ply data/output/splats/scene/point_cloud.ply
 ```
 
-## 📖 Detailed Workflow
+## Detailed Workflow
 
 ### Step 1: Video Capture
 
@@ -427,7 +427,7 @@ For complete Blender instructions, see [docs/BLENDER_GUIDE.md](docs/BLENDER_GUID
 ![Final Render](docs/images/blender_render.png)
 <!-- TODO: Add final render example -->
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 gaussian_splats/
@@ -517,21 +517,21 @@ This project builds upon amazing work from the research community:
 - **Tutorial Reference**: [nicko16's YouTube Tutorial](https://www.youtube.com/watch?v=A1T9uJtq0cI)
 - **Blender Add-on**: [Kiri 3DGS Render](https://github.com/KIRI-Innovation/kiri-3dgs-blender-addon)
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🌟 Showcase
+## Showcase
 
 <!-- TODO: Add showcase section with example renders -->
 
 If you create something cool with this pipeline, please share it! Open a PR to add your work to our showcase.
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-## 📮 Contact
+## Contact
 
 <!-- TODO: Add your contact information -->
 - **GitHub**: [@arpm511](https://github.com/arpm511)

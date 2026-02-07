@@ -33,6 +33,8 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     ffmpeg \
     wget \
+    libopenimageio-dev \
+    libopenexr-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install COLMAP
