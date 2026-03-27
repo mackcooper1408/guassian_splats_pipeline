@@ -30,6 +30,7 @@ data/input/images/*
 data/processed/frames/*
 data/processed/colmap/*
 data/output/splats/*
+data/output/kiri/*
 !data/input/videos/.gitkeep
 !data/input/images/.gitkeep
 !data/processed/frames/.gitkeep
