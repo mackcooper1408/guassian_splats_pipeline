@@ -49,9 +49,9 @@ def undistort_images(images_dir, sparse_dir, output_dir, max_image_size=2000):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print("\n" + "=" * 60)
-    print("COLMAP Image Undistortion")
-    print("=" * 60)
+    print(f"\n{'=' * 60}", flush=True)
+    print("COLMAP Image Undistortion", flush=True)
+    print(f"{'=' * 60}", flush=True)
 
     cmd = [
         "colmap", "image_undistorter",
@@ -61,6 +61,7 @@ def undistort_images(images_dir, sparse_dir, output_dir, max_image_size=2000):
         "--output_type",   "COLMAP",
         "--max_image_size", str(max_image_size),
     ]
+    print(f"  cmd: {' '.join(_run_with_display(cmd))}", flush=True)
     subprocess.run(_run_with_display(cmd), check=True)
 
     images_out = output_dir / "images"
@@ -104,10 +105,11 @@ def run_colmap(
     sparse_dir = output_dir / "sparse"
     sparse_dir.mkdir(parents=True, exist_ok=True)
     
-    print("=" * 60)
-    print("COLMAP Feature Extraction")
-    print("=" * 60)
-    
+    n_images = len(list(images_dir.glob("*")))
+    print(f"\n{'=' * 60}", flush=True)
+    print(f"COLMAP Feature Extraction  ({n_images} images, quality={quality}, gpu={gpu})", flush=True)
+    print(f"{'=' * 60}", flush=True)
+
     # Feature extraction
     feature_cmd = [
         "colmap", "feature_extractor",
@@ -116,12 +118,10 @@ def run_colmap(
         "--ImageReader.camera_model", camera_model,
         "--ImageReader.single_camera", "1",
     ]
-    
-    # GPU mode (only add if GPU is enabled and available)
+
     if gpu:
         feature_cmd.extend(["--SiftExtraction.use_gpu", "1"])
-    
-    # Set quality parameters
+
     if quality == "high":
         feature_cmd.extend([
             "--SiftExtraction.max_image_size", "4096",
@@ -137,20 +137,19 @@ def run_colmap(
             "--SiftExtraction.max_image_size", "1024",
             "--SiftExtraction.max_num_features", "2048"
         ])
-    
+
+    print(f"  cmd: {' '.join(_run_with_display(feature_cmd))}", flush=True)
     subprocess.run(_run_with_display(feature_cmd), check=True)
-    
-    print("\n" + "=" * 60)
+    print("  ✓ Feature extraction done", flush=True)
+
+    print(f"\n{'=' * 60}", flush=True)
     if sequential:
-        print(f"COLMAP Sequential Matching (overlap={sequential_overlap})")
+        print(f"COLMAP Sequential Matching  (overlap={sequential_overlap}, gpu={gpu})", flush=True)
     else:
-        print("COLMAP Exhaustive Matching")
-    print("=" * 60)
+        print(f"COLMAP Exhaustive Matching  (gpu={gpu})", flush=True)
+    print(f"{'=' * 60}", flush=True)
 
     if sequential:
-        # O(n * overlap) — correct choice for ordered video frames.
-        # quadratic_overlap also matches at doubling offsets (i+1, i+2, i+4...)
-        # to catch long-range connections when camera revisits a location.
         matching_cmd = [
             "colmap", "sequential_matcher",
             "--database_path", str(database_path),
@@ -158,7 +157,6 @@ def run_colmap(
             "--SequentialMatching.quadratic_overlap", "1",
         ]
     else:
-        # O(n²) — thorough but slow; use for unordered image collections
         matching_cmd = [
             "colmap", "exhaustive_matcher",
             "--database_path", str(database_path),
@@ -167,53 +165,54 @@ def run_colmap(
     if gpu:
         matching_cmd.extend(["--SiftMatching.use_gpu", "1"])
 
+    print(f"  cmd: {' '.join(_run_with_display(matching_cmd))}", flush=True)
     subprocess.run(_run_with_display(matching_cmd), check=True)
-    
-    # Sparse reconstruction - use GLOMAP or COLMAP mapper
+    print("  ✓ Matching done", flush=True)
+
+    # Sparse reconstruction
     if use_glomap and shutil.which("glomap"):
-        print("\n" + "=" * 60)
-        print("GLOMAP Sparse Reconstruction (Faster)")
-        print("=" * 60)
-        
-        # GLOMAP mapper (much faster than COLMAP)
+        print(f"\n{'=' * 60}", flush=True)
+        print("GLOMAP Sparse Reconstruction", flush=True)
+        print(f"{'=' * 60}", flush=True)
+
         mapper_cmd = [
             "glomap", "mapper",
             "--database_path", str(database_path),
             "--image_path", str(images_dir),
             "--output_path", str(sparse_dir),
         ]
-        
+        print(f"  cmd: {' '.join(_run_with_display(mapper_cmd))}", flush=True)
         subprocess.run(_run_with_display(mapper_cmd), check=True)
     else:
         if use_glomap:
-            print("\nWarning: GLOMAP not found, falling back to COLMAP mapper")
-        
-        print("\n" + "=" * 60)
-        print("COLMAP Sparse Reconstruction")
-        print("=" * 60)
-        
-        # COLMAP mapper (slower but reliable fallback)
+            print("\nWarning: GLOMAP not found, falling back to COLMAP mapper", flush=True)
+
+        print(f"\n{'=' * 60}", flush=True)
+        print("COLMAP Sparse Reconstruction", flush=True)
+        print(f"{'=' * 60}", flush=True)
+
         mapper_cmd = [
             "colmap", "mapper",
             "--database_path", str(database_path),
             "--image_path", str(images_dir),
             "--output_path", str(sparse_dir),
         ]
-        
+        print(f"  cmd: {' '.join(_run_with_display(mapper_cmd))}", flush=True)
         subprocess.run(_run_with_display(mapper_cmd), check=True)
-    
-    # Find the reconstruction folder (usually '0')
+
+    print("  ✓ Reconstruction done", flush=True)
+
     reconstruction_dirs = sorted([d for d in sparse_dir.iterdir() if d.is_dir()])
-    
+
     if not reconstruction_dirs:
         raise RuntimeError("COLMAP reconstruction failed - no output generated")
-    
+
     main_reconstruction = reconstruction_dirs[0]
-    print(f"\nReconstruction saved to: {main_reconstruction}")
-    
-    print("\n" + "=" * 60)
-    print("COLMAP Processing Complete!")
-    print("=" * 60)
+    print(f"\nReconstruction saved to: {main_reconstruction}", flush=True)
+
+    print(f"\n{'=' * 60}", flush=True)
+    print("COLMAP Processing Complete!", flush=True)
+    print(f"{'=' * 60}", flush=True)
     
     return main_reconstruction
 
