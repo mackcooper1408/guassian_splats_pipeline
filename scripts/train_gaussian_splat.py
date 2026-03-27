@@ -11,6 +11,26 @@ from pathlib import Path
 import shutil
 
 
+def _find_train_script():
+    """
+    Locate graphdeco's train.py, checking common install locations in order:
+      1. Docker workspace (original project default)
+      2. Colab default clone path
+      3. Same directory as this script's repo root
+    """
+    candidates = [
+        "/workspace/gaussian-splatting/train.py",   # Docker
+        "/content/gaussian-splatting/train.py",     # Colab
+        Path(__file__).parent.parent / "train.py",  # local clone
+    ]
+    for p in candidates:
+        if Path(p).exists():
+            return str(p)
+    raise FileNotFoundError(
+        "Could not find train.py. Pass --train_script /path/to/train.py explicitly."
+    )
+
+
 def train_gaussian_splatting(
     source_path,
     model_path,
@@ -18,7 +38,8 @@ def train_gaussian_splatting(
     resolution=1,
     test_iterations=None,
     save_iterations=None,
-    checkpoint_iterations=None
+    checkpoint_iterations=None,
+    train_script=None,
 ):
     """
     Train Gaussian Splatting model.
@@ -46,10 +67,12 @@ def train_gaussian_splatting(
     print(f"Iterations: {iterations}")
     print("=" * 60)
     
+    resolved_script = train_script or _find_train_script()
+
     # Build training command
     train_cmd = [
         "python3",
-        "/workspace/gaussian-splatting/train.py",
+        resolved_script,
         "-s", str(source_path),
         "-m", str(model_path),
         "--iterations", str(iterations),
@@ -159,7 +182,13 @@ def main():
         default=None,
         help="Export PLY file to this path after training"
     )
-    
+    parser.add_argument(
+        "--train_script",
+        type=str,
+        default=None,
+        help="Path to graphdeco train.py (auto-detected if not set)"
+    )
+
     args = parser.parse_args()
     
     # Validate input
@@ -171,7 +200,8 @@ def main():
         args.source_path,
         args.model_path,
         iterations=args.iterations,
-        resolution=args.resolution
+        resolution=args.resolution,
+        train_script=args.train_script,
     )
     
     # Export PLY if requested
