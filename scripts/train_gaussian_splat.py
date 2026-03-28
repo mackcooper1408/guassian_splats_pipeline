@@ -82,10 +82,9 @@ def train_gaussian_splatting(
         "--resolution", str(resolution),
     ]
 
-    # graphdeco defaults to looking for images at <source_path>/images/.
-    # Pass --images explicitly when frames live in a separate directory.
+    # graphdeco treats --images as relative to source_path, so pass absolute path.
     if images_dir:
-        train_cmd.extend(["--images", str(images_dir)])
+        train_cmd.extend(["--images", str(Path(images_dir).resolve())])
     
     if test_iterations:
         train_cmd.extend(["--test_iterations"] + [str(i) for i in test_iterations])
