@@ -121,19 +121,20 @@ def run_colmap(
 
     # Note: --SiftExtraction.use_gpu removed in COLMAP 3.9+; GPU is automatic when CUDA available
 
+    # Note: max_image_size moved to FeatureExtraction namespace in COLMAP 3.9+
     if quality == "high":
         feature_cmd.extend([
-            "--SiftExtraction.max_image_size", "4096",
+            "--FeatureExtraction.max_image_size", "4096",
             "--SiftExtraction.max_num_features", "8192"
         ])
     elif quality == "medium":
         feature_cmd.extend([
-            "--SiftExtraction.max_image_size", "2048",
+            "--FeatureExtraction.max_image_size", "2048",
             "--SiftExtraction.max_num_features", "4096"
         ])
     else:  # low
         feature_cmd.extend([
-            "--SiftExtraction.max_image_size", "1024",
+            "--FeatureExtraction.max_image_size", "1024",
             "--SiftExtraction.max_num_features", "2048"
         ])
 
