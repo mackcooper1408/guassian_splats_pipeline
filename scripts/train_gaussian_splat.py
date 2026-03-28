@@ -34,6 +34,7 @@ def _find_train_script():
 def train_gaussian_splatting(
     source_path,
     model_path,
+    images_dir=None,
     iterations=30000,
     resolution=1,
     test_iterations=None,
@@ -65,8 +66,10 @@ def train_gaussian_splatting(
     print(f"Source path: {source_path}")
     print(f"Model path: {model_path}")
     print(f"Iterations: {iterations}")
+    if images_dir:
+        print(f"Images dir: {images_dir}")
     print("=" * 60)
-    
+
     resolved_script = train_script or _find_train_script()
 
     # Build training command
@@ -78,6 +81,11 @@ def train_gaussian_splatting(
         "--iterations", str(iterations),
         "--resolution", str(resolution),
     ]
+
+    # graphdeco defaults to looking for images at <source_path>/images/.
+    # Pass --images explicitly when frames live in a separate directory.
+    if images_dir:
+        train_cmd.extend(["--images", str(images_dir)])
     
     if test_iterations:
         train_cmd.extend(["--test_iterations"] + [str(i) for i in test_iterations])
@@ -177,6 +185,12 @@ def main():
         help="Resolution downscale factor (1=full, 2=half, etc.)"
     )
     parser.add_argument(
+        "--images_dir",
+        type=str,
+        default=None,
+        help="Directory containing input images (if separate from source_path/images/)"
+    )
+    parser.add_argument(
         "--export_ply",
         type=str,
         default=None,
@@ -199,6 +213,7 @@ def main():
     train_gaussian_splatting(
         args.source_path,
         args.model_path,
+        images_dir=args.images_dir,
         iterations=args.iterations,
         resolution=args.resolution,
         train_script=args.train_script,
