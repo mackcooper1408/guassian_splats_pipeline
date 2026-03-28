@@ -119,8 +119,7 @@ def run_colmap(
         "--ImageReader.single_camera", "1",
     ]
 
-    if gpu:
-        feature_cmd.extend(["--SiftExtraction.use_gpu", "1"])
+    # Note: --SiftExtraction.use_gpu removed in COLMAP 3.9+; GPU is automatic when CUDA available
 
     if quality == "high":
         feature_cmd.extend([
@@ -162,8 +161,7 @@ def run_colmap(
             "--database_path", str(database_path),
         ]
 
-    if gpu:
-        matching_cmd.extend(["--SiftMatching.use_gpu", "1"])
+    # Note: --SiftMatching.use_gpu removed in COLMAP 3.9+; GPU is automatic when CUDA available
 
     print(f"  cmd: {' '.join(_run_with_display(matching_cmd))}", flush=True)
     subprocess.run(_run_with_display(matching_cmd), check=True)
