@@ -39,6 +39,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-dev \
     ffmpeg \
+    xvfb \
     wget \
     libopenimageio-dev \
     openimageio-tools \
@@ -47,7 +48,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install COLMAP
-RUN git clone https://github.com/colmap/colmap.git /tmp/colmap && \
+RUN git clone --branch 3.10 https://github.com/colmap/colmap.git /tmp/colmap && \
     cd /tmp/colmap && \
     mkdir build && cd build && \
     cmake .. -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89" && \
@@ -79,6 +80,7 @@ RUN git clone https://github.com/graphdeco-inria/gaussian-splatting /workspace/g
 WORKDIR /workspace/gaussian-splatting
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
+RUN pip3 install submodules/diff-gaussian-rasterization submodules/simple-knn
 
 # Set working directory back to main workspace
 WORKDIR /workspace/project
