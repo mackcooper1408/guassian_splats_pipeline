@@ -6,9 +6,6 @@ tqdm>=4.65.0
 plyfile>=0.8.1
 matplotlib>=3.7.0
 
-# For COLMAP interface
-pycolmap>=0.4.0
-
 # Deep learning
 torch>=2.0.0
 torchvision>=0.15.0

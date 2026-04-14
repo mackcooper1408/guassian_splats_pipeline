@@ -52,7 +52,7 @@ RUN git clone --branch 3.10 https://github.com/colmap/colmap.git /tmp/colmap && 
     cd /tmp/colmap && \
     mkdir build && cd build && \
     cmake .. -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89" && \
-    make -j$(nproc) && \
+    make -j2 && \
     make install && \
     rm -rf /tmp/colmap
 
@@ -61,7 +61,7 @@ RUN git clone https://github.com/colmap/glomap.git /tmp/glomap && \
     cd /tmp/glomap && \
     mkdir build && cd build && \
     cmake .. -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89" && \
-    make -j$(nproc) && \
+    make -j2 && \
     make install && \
     rm -rf /tmp/glomap
 
@@ -80,7 +80,12 @@ RUN git clone https://github.com/graphdeco-inria/gaussian-splatting /workspace/g
 WORKDIR /workspace/gaussian-splatting
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
-RUN pip3 install submodules/diff-gaussian-rasterization submodules/simple-knn
+
+# graphdeco CUDA submodules (diff-gaussian-rasterization, simple-knn) must be
+# compiled on a machine with a real NVIDIA GPU + matching CUDA runtime.
+# The entrypoint script compiles them on first launch (~2 min).
+COPY entrypoint.sh /workspace/entrypoint.sh
+RUN chmod +x /workspace/entrypoint.sh
 
 # Set working directory back to main workspace
 WORKDIR /workspace/project
@@ -88,4 +93,5 @@ WORKDIR /workspace/project
 # Expose port for viewers if needed
 EXPOSE 6006
 
+ENTRYPOINT ["/workspace/entrypoint.sh"]
 CMD ["/bin/bash"]
