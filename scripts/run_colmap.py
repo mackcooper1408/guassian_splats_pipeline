@@ -65,9 +65,19 @@ def undistort_images(images_dir, sparse_dir, output_dir, max_image_size=2000):
     subprocess.run(_run_with_display(cmd), check=True)
 
     images_out = output_dir / "images"
-    sparse_out = output_dir / "sparse" / "0"
+    sparse_out = output_dir / "sparse"
     assert images_out.exists(), f"images/ not found in undistorted output: {output_dir}"
-    assert sparse_out.exists(), f"sparse/0/ not found in undistorted output: {output_dir}"
+    assert sparse_out.exists(), f"sparse/ not found in undistorted output: {output_dir}"
+
+    # COLMAP undistorter may put model files directly in sparse/ rather than
+    # sparse/0/. graphdeco train.py expects sparse/0/, so move them if needed.
+    sparse_0 = sparse_out / "0"
+    if not sparse_0.exists():
+        # Model files are directly in sparse/ — move them into sparse/0/
+        sparse_0.mkdir()
+        for f in sparse_out.iterdir():
+            if f.is_file():
+                shutil.move(str(f), str(sparse_0 / f.name))
 
     n = len(list(images_out.glob("*")))
     print(f"\nUndistortion complete — {n} images written to {output_dir}")
